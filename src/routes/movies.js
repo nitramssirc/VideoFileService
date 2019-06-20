@@ -1,6 +1,6 @@
 var express = require('express');
-var fs = require('fs');
-var path = require('path');
+var fileservice = require('../services/fileService');
+var movieModelFactory = require('../models/movieModel');
 
 var router = express.Router();
 
@@ -20,21 +20,15 @@ router.route('/')
 
 
 function getMovieFiles(){
-    var filesToReturn = [];
     var dir = "../../../videos/Movies"
-    function walkDir(currentPath) {
-      var files = fs.readdirSync(currentPath);
-      for (var i in files) {
-        var curFile = path.join(currentPath, files[i]);      
-        if (fs.statSync(curFile).isFile() && path.extname(curFile) == '.mp4') {
-          filesToReturn.push(curFile.replace(dir, ''));
-        } else if (fs.statSync(curFile).isDirectory()) {
-         walkDir(curFile);
-        }
-      }
-    };
-    walkDir(dir);
-    return filesToReturn;     
+    var files = fileservice.getFilesInDirectory(dir, ".mp4", true);
+    var movies = [];
+    files.forEach(file => {
+      movies.push(movieModelFactory.create("/" + file));//Need to add movies back in but I'm tired and this will get it working
+    });
+    return movies;
 }
+
+
 
 module.exports = router;
